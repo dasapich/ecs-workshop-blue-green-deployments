@@ -47,7 +47,8 @@ export class BlueGreenPipelineStack extends cdk.Stack {
             codeBuildProjectName: process.env.CODE_BUILD_PROJECT_NAME,
             codeRepoName: process.env.CODE_REPO_NAME,
             ecsTaskRoleArn: process.env.ECS_TASK_ROLE_ARN,
-            taskSetTerminationTimeInMinutes: taskSetTerminationTimeInMinutes.valueAsNumber
+            taskSetTerminationTimeInMinutes: taskSetTerminationTimeInMinutes.valueAsNumber,
+            deploymentReadyWaitTimeinMinutes: Number(process.env.DEPLOY_READY_WAIT_MIN)
         })
     }
 }

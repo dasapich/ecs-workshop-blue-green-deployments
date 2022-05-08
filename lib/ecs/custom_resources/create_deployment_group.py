@@ -36,6 +36,7 @@ class DeploymentGroupConfig:
             cluster_name,
             service_name,
             termination_wait_time,
+            deployment_ready_wait_time,
             target_group_alarms
     ):
         """
@@ -52,6 +53,7 @@ class DeploymentGroupConfig:
         :param cluster_name: ECS cluster name
         :param service_name: ECS service name
         :param termination_wait_time: ECS task set termination wait time
+        :param deployment_ready_wait_time: Deployment ready wait time
         :param target_group_alarms: Target group CloudWatch alarms
         """
         self.application_name = application_name
@@ -65,6 +67,7 @@ class DeploymentGroupConfig:
         self.cluster_name = cluster_name
         self.service_name = service_name
         self.termination_wait_time = termination_wait_time
+        self.deployment_ready_wait_time = deployment_ready_wait_time
         self.target_group_alarms = target_group_alarms
 
 
@@ -81,6 +84,7 @@ def extract_params(event):
         cluster_name=event['ResourceProperties']['EcsClusterName'],
         service_name=event['ResourceProperties']['EcsServiceName'],
         termination_wait_time=event['ResourceProperties']['TerminationWaitTime'],
+        deployment_ready_wait_time=event['ResourceProperties']['DeploymentReadyWaitTime'],
         target_group_alarms=event['ResourceProperties']['TargetGroupAlarms']
     )
 
@@ -119,7 +123,8 @@ def create_deployment_group(event, context):
                     'terminationWaitTimeInMinutes': int(config.termination_wait_time)
                 },
                 'deploymentReadyOption': {
-                    'actionOnTimeout': 'CONTINUE_DEPLOYMENT'
+                    'actionOnTimeout': 'CONTINUE_DEPLOYMENT',
+                    'waitTimeInMinutes': int(config.deployment_ready_wait_time)
                 }
             },
             alarmConfiguration={

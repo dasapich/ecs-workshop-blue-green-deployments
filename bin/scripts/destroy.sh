@@ -22,7 +22,7 @@ export ECR_REPO_NAME=$(aws cloudformation describe-stacks --stack-name BlueGreen
 export CODE_BUILD_PROJECT_NAME=$(aws cloudformation describe-stacks --stack-name BlueGreenContainerImageStack --query 'Stacks[*].Outputs[?ExportName==`codeBuildProjectName`].OutputValue' --output text)
 export ECS_TASK_ROLE_ARN=$(aws cloudformation describe-stacks --stack-name BlueGreenContainerImageStack --query 'Stacks[*].Outputs[?ExportName==`ecsTaskRoleArn`].OutputValue' --output text)
 
-cdk --app "npx ts-node bin/pipeline-stack.ts" destroy --require-approval never
-cdk --app "npx ts-node bin/container-image-stack.ts" destroy --require-approval never
+npx cdk --app "npx ts-node bin/pipeline-stack.ts" destroy --require-approval never
+npx cdk --app "npx ts-node bin/container-image-stack.ts" destroy --require-approval never
 
 echo -e "${GREEN}Cleanup completed..."

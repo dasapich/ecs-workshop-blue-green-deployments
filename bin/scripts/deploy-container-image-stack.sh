@@ -17,9 +17,9 @@ export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output tex
 export AWS_DEFAULT_REGION=$(aws configure get region)
 export CODE_REPO_NAME=nginx-sample
 
-cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION
+npx cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION
 
-cdk --app "npx ts-node bin/container-image-stack.ts" deploy --require-approval never
+npx cdk --app "npx ts-node bin/container-image-stack.ts" deploy --require-approval never
 
 echo -e "${GREEN}Completed building the container image stack resources...."
 

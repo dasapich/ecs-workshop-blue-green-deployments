@@ -27,6 +27,7 @@ export interface EcsBlueGreenPipelineProps {
     readonly vpc?: IVpc;
     readonly cluster?: ICluster;
     readonly taskSetTerminationTimeInMinutes?: number;
+    readonly deploymentReadyWaitTimeinMinutes?: number;
     readonly deploymentConfigName?: string;
 }
 
@@ -129,6 +130,7 @@ export class EcsBlueGreenPipeline extends cdk.Construct {
             blueTargetGroupName: ecsBlueGreenService.blueTargetGroup.targetGroupName,
             greenTargetGroupName: ecsBlueGreenService.greenTargetGroup.targetGroupName,
             terminationWaitTime: props.taskSetTerminationTimeInMinutes,
+            deploymentReadyWaitTime: props.deploymentReadyWaitTimeinMinutes,
             deploymentConfigName: props.deploymentConfigName,
             deploymentGroupName: props.apiName,
             targetGroupAlarms: ecsServiceAlarms.targetGroupAlarms

@@ -32,6 +32,13 @@ export interface EcsBlueGreenDeploymentGroupProps {
     readonly terminationWaitTime?: number;
 
     /**
+     * The deployment ready wait time
+     *
+     */
+    readonly deploymentReadyWaitTime?: number;
+
+
+    /**
      * Blue target group name
      */
     readonly blueTargetGroupName?: string;
@@ -136,7 +143,8 @@ export class EcsBlueGreenDeploymentGroup extends cdk.Construct {
                 TargetGroupAlarms: JSON.stringify(props.targetGroupAlarms),
                 EcsClusterName: props.ecsClusterName,
                 EcsServiceName: props.ecsServiceName,
-                TerminationWaitTime: props.terminationWaitTime
+                TerminationWaitTime: props.terminationWaitTime,
+                DeploymentReadyWaitTime: props.deploymentReadyWaitTime
             }
         });
 
