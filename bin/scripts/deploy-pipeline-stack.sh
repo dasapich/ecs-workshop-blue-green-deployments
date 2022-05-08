@@ -42,7 +42,7 @@ echo -e "${GREEN}Start building the CodePipeline resources...."
 export API_NAME=nginx-sample
 export CONTAINER_PORT=80
 export CIDR_RANGE=10.0.0.0/16
-export DEPLOY_READY_WAIT_MIN=2
+export DEPLOY_READY_WAIT_MIN=10
 
 npx cdk --app "npx ts-node bin/pipeline-stack.ts" deploy --require-approval never
 export ALB_DNS=$(aws cloudformation describe-stacks --stack-name BlueGreenPipelineStack --query 'Stacks[*].Outputs[?ExportName==`ecsBlueGreenLBDns`].OutputValue' --output text)

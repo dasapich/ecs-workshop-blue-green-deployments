@@ -123,7 +123,8 @@ def create_deployment_group(event, context):
                     'terminationWaitTimeInMinutes': int(config.termination_wait_time)
                 },
                 'deploymentReadyOption': {
-                    'actionOnTimeout': 'CONTINUE_DEPLOYMENT',
+                    #'actionOnTimeout': 'CONTINUE_DEPLOYMENT',
+                    'actionOnTimeout': 'STOP_DEPLOYMENT',
                     'waitTimeInMinutes': int(config.deployment_ready_wait_time)
                 }
             },
@@ -209,7 +210,9 @@ def update_deployment_group(event, context):
                     'terminationWaitTimeInMinutes': int(config.termination_wait_time)
                 },
                 'deploymentReadyOption': {
-                    'actionOnTimeout': 'CONTINUE_DEPLOYMENT'
+                    #'actionOnTimeout': 'CONTINUE_DEPLOYMENT',
+                    'actionOnTimeout': 'STOP_DEPLOYMENT',
+                    'waitTimeInMinutes': int(config.deployment_ready_wait_time)
                 }
             },
             alarmConfiguration={
