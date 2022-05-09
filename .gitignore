@@ -13,4 +13,6 @@ cdk.out
 # IDE
 .idea
 .DS_Store
+.vim
 
+.venv

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 export * from './ecs/deployment-group';
+export * from './ecs/deployment-hooks';
 export * from './ecs/service'
 export * from './ecs/alarms'
 export * from './ecs/cluster'

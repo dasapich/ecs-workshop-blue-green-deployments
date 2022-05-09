@@ -5,7 +5,7 @@ import * as cdk from '@aws-cdk/core';
 import {CfnOutput} from '@aws-cdk/core';
 import {AnyPrincipal, Effect, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {BlockPublicAccess, BucketEncryption} from '@aws-cdk/aws-s3';
-import {EcsBlueGreenDeploymentGroup, EcsBlueGreenService, EcsServiceAlarms} from '..';
+import {EcsBlueGreenDeploymentGroup, EcsBlueGreenService, EcsServiceAlarms, EcsBlueGreenDeploymentHooks} from '..';
 import {ICluster} from '@aws-cdk/aws-ecs';
 import {IVpc} from '@aws-cdk/aws-ec2';
 import iam = require('@aws-cdk/aws-iam');
@@ -134,6 +134,14 @@ export class EcsBlueGreenPipeline extends cdk.Construct {
             deploymentConfigName: props.deploymentConfigName,
             deploymentGroupName: props.apiName,
             targetGroupAlarms: ecsServiceAlarms.targetGroupAlarms
+        });
+
+        // Blue/Green delployment lifecycle hooks
+        const ecsBlueGreenDeploymentHooks = new EcsBlueGreenDeploymentHooks(this, 'hooks', {
+            alb: ecsBlueGreenService.alb,
+            blueTargetGroup: ecsBlueGreenService.blueTargetGroup,
+            greenTargetGroup: ecsBlueGreenService.greenTargetGroup,
+            prodListener: ecsBlueGreenService.albProdListener
         });
 
         // Code Pipeline - CloudWatch trigger event is created by CDK

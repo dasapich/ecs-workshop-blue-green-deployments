@@ -35,7 +35,7 @@ test('Blue/Green deployment pipeline is created', () => {
     })
 
     // THEN
-    expectCDK(stack).to(countResources('AWS::IAM::Role', 9));
+    expectCDK(stack).to(countResources('AWS::IAM::Role', 10));
     expectCDK(stack).to(countResources('AWS::ECR::Repository', 1));
     expectCDK(stack).to(countResources('AWS::CodeCommit::Repository', 1));
     expectCDK(stack).to(countResources('AWS::CodeBuild::Project', 1));

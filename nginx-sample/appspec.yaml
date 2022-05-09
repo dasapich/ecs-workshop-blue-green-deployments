@@ -10,3 +10,7 @@ Resources:
         LoadBalancerInfo:
           ContainerName: "nginx-sample"
           ContainerPort: 80
+        PlatformVersion: "LATEST"
+Hooks:
+  - AfterAllowTestTraffic: "blue-green-ecs-after-allow-test-traffic"
+  - BeforeAllowTraffc: "blue-green-ecs-before-allow-traffic"

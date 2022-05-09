@@ -15,7 +15,7 @@ FAILED = "FAILED"
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
 
-client = boto3.client('codedeploy')
+client = boto3.client("codedeploy")
 
 
 class DeploymentGroupConfig:
@@ -24,20 +24,20 @@ class DeploymentGroupConfig:
     """
 
     def __init__(
-            self,
-            application_name,
-            deployment_group_name,
-            deployment_config_name,
-            service_role_arn,
-            blue_target_group,
-            green_target_group,
-            prod_listener_arn,
-            test_listener_arn,
-            cluster_name,
-            service_name,
-            termination_wait_time,
-            deployment_ready_wait_time,
-            target_group_alarms
+        self,
+        application_name,
+        deployment_group_name,
+        deployment_config_name,
+        service_role_arn,
+        blue_target_group,
+        green_target_group,
+        prod_listener_arn,
+        test_listener_arn,
+        cluster_name,
+        service_name,
+        termination_wait_time,
+        deployment_ready_wait_time,
+        target_group_alarms,
     ):
         """
         DeploymentGroupConfig accepts parameters for the CodeDeploy deployment group custom resource
@@ -73,19 +73,21 @@ class DeploymentGroupConfig:
 
 def extract_params(event):
     return DeploymentGroupConfig(
-        application_name=event['ResourceProperties']['ApplicationName'],
-        deployment_group_name=event['ResourceProperties']['DeploymentGroupName'],
-        deployment_config_name=event['ResourceProperties']['DeploymentConfigName'],
-        service_role_arn=event['ResourceProperties']['ServiceRoleArn'],
-        blue_target_group=event['ResourceProperties']['BlueTargetGroup'],
-        green_target_group=event['ResourceProperties']['GreenTargetGroup'],
-        prod_listener_arn=event['ResourceProperties']['ProdListenerArn'],
-        test_listener_arn=event['ResourceProperties']['TestListenerArn'],
-        cluster_name=event['ResourceProperties']['EcsClusterName'],
-        service_name=event['ResourceProperties']['EcsServiceName'],
-        termination_wait_time=event['ResourceProperties']['TerminationWaitTime'],
-        deployment_ready_wait_time=event['ResourceProperties']['DeploymentReadyWaitTime'],
-        target_group_alarms=event['ResourceProperties']['TargetGroupAlarms']
+        application_name=event["ResourceProperties"]["ApplicationName"],
+        deployment_group_name=event["ResourceProperties"]["DeploymentGroupName"],
+        deployment_config_name=event["ResourceProperties"]["DeploymentConfigName"],
+        service_role_arn=event["ResourceProperties"]["ServiceRoleArn"],
+        blue_target_group=event["ResourceProperties"]["BlueTargetGroup"],
+        green_target_group=event["ResourceProperties"]["GreenTargetGroup"],
+        prod_listener_arn=event["ResourceProperties"]["ProdListenerArn"],
+        test_listener_arn=event["ResourceProperties"]["TestListenerArn"],
+        cluster_name=event["ResourceProperties"]["EcsClusterName"],
+        service_name=event["ResourceProperties"]["EcsServiceName"],
+        termination_wait_time=event["ResourceProperties"]["TerminationWaitTime"],
+        deployment_ready_wait_time=event["ResourceProperties"][
+            "DeploymentReadyWaitTime"
+        ],
+        target_group_alarms=event["ResourceProperties"]["TargetGroupAlarms"],
     )
 
 
@@ -93,13 +95,13 @@ def extract_params(event):
 def handler(event, context):
     LOGGER.info("Received event: " + json.dumps(event, indent=2))
 
-    request_type = event['RequestType']
+    request_type = event["RequestType"]
 
-    if request_type == 'Create':
+    if request_type == "Create":
         create_deployment_group(event, context)
-    elif request_type == 'Update':
+    elif request_type == "Update":
         update_deployment_group(event, context)
-    elif request_type == 'Delete':
+    elif request_type == "Delete":
         delete_deployment_group(event, context)
 
 
@@ -108,7 +110,7 @@ def create_deployment_group(event, context):
     status = FAILED
     config = extract_params(event)
     ready_wait = int(config.deployment_ready_wait_time)
-    action_on_timeout = 'STOP_DEPLOYMENT' if ready_wait > 0 else 'CONTINUE_DEPLOYMENT'
+    action_on_timeout = "STOP_DEPLOYMENT" if ready_wait > 0 else "CONTINUE_DEPLOYMENT"
     try:
         client.create_deployment_group(
             applicationName=config.application_name,
@@ -116,76 +118,75 @@ def create_deployment_group(event, context):
             deploymentConfigName=config.deployment_config_name,
             serviceRoleArn=config.service_role_arn,
             deploymentStyle={
-                'deploymentType': 'BLUE_GREEN',
-                'deploymentOption': 'WITH_TRAFFIC_CONTROL'
+                "deploymentType": "BLUE_GREEN",
+                "deploymentOption": "WITH_TRAFFIC_CONTROL",
             },
             blueGreenDeploymentConfiguration={
-                'terminateBlueInstancesOnDeploymentSuccess': {
-                    'action': 'TERMINATE',
-                    'terminationWaitTimeInMinutes': int(config.termination_wait_time)
+                "terminateBlueInstancesOnDeploymentSuccess": {
+                    "action": "TERMINATE",
+                    "terminationWaitTimeInMinutes": int(config.termination_wait_time),
                 },
-                'deploymentReadyOption': {
-                    'actionOnTimeout': action_on_timeout,
-                    'waitTimeInMinutes': ready_wait
-                }
+                "deploymentReadyOption": {
+                    "actionOnTimeout": action_on_timeout,
+                    "waitTimeInMinutes": ready_wait,
+                },
             },
             alarmConfiguration={
-                'enabled': True,
-                'ignorePollAlarmFailure': False,
-                'alarms': json.loads(config.target_group_alarms)
+                "enabled": True,
+                "ignorePollAlarmFailure": False,
+                "alarms": json.loads(config.target_group_alarms),
             },
             autoRollbackConfiguration={
-                'enabled': True,
-                'events': [
-                    'DEPLOYMENT_FAILURE',
-                    'DEPLOYMENT_STOP_ON_REQUEST',
-                    'DEPLOYMENT_STOP_ON_ALARM'
-                ]
+                "enabled": True,
+                "events": [
+                    "DEPLOYMENT_FAILURE",
+                    "DEPLOYMENT_STOP_ON_REQUEST",
+                    "DEPLOYMENT_STOP_ON_ALARM",
+                ],
             },
             ecsServices=[
                 {
-                    'serviceName': config.service_name,
-                    'clusterName': config.cluster_name
+                    "serviceName": config.service_name,
+                    "clusterName": config.cluster_name,
                 },
             ],
             loadBalancerInfo={
-                'targetGroupPairInfoList': [
+                "targetGroupPairInfoList": [
                     {
-                        'targetGroups': [
-                            {
-                                'name': config.blue_target_group
-                            },
-                            {
-                                'name': config.green_target_group
-                            }
+                        "targetGroups": [
+                            {"name": config.blue_target_group},
+                            {"name": config.green_target_group},
                         ],
-                        'prodTrafficRoute': {
-                            'listenerArns': [
-                                config.prod_listener_arn
-                            ]
+                        "prodTrafficRoute": {
+                            "listenerArns": [config.prod_listener_arn]
                         },
-                        'testTrafficRoute': {
-                            'listenerArns': [
-                                config.test_listener_arn
-                            ]
-                        }
+                        "testTrafficRoute": {
+                            "listenerArns": [config.test_listener_arn]
+                        },
                     },
                 ]
-            }
+            },
         )
         data = {
             "event": "Resource created",
-            "deploymentGroupName": config.deployment_group_name
+            "deploymentGroupName": config.deployment_group_name,
         }
         status = SUCCESS
     except BaseException as e:
-        LOGGER.error("Resource create failed for deployment group {}".format(config.deployment_group_name) + str(e))
+        LOGGER.error(
+            "Resource create failed for deployment group {}".format(
+                config.deployment_group_name
+            )
+            + str(e)
+        )
     finally:
-        send(event=event,
-             context=context,
-             physical_resource_id='is-set-' + str(uuid.uuid4()),
-             response_status=status,
-             response_data=data)
+        send(
+            event=event,
+            context=context,
+            physical_resource_id="is-set-" + str(uuid.uuid4()),
+            response_status=status,
+            response_data=data,
+        )
 
 
 def update_deployment_group(event, context):
@@ -193,9 +194,11 @@ def update_deployment_group(event, context):
     status = FAILED
     config = extract_params(event)
     ready_wait = int(config.deployment_ready_wait_time)
-    action_on_timeout = 'STOP_DEPLOYMENT' if ready_wait > 0 else 'CONTINUE_DEPLOYMENT'
+    action_on_timeout = "STOP_DEPLOYMENT" if ready_wait > 0 else "CONTINUE_DEPLOYMENT"
     try:
-        current_deployment_group_name = event['OldResourceProperties']['DeploymentGroupName']
+        current_deployment_group_name = event["OldResourceProperties"][
+            "DeploymentGroupName"
+        ]
 
         client.update_deployment_group(
             applicationName=config.application_name,
@@ -204,76 +207,75 @@ def update_deployment_group(event, context):
             deploymentConfigName=config.deployment_config_name,
             serviceRoleArn=config.service_role_arn,
             deploymentStyle={
-                'deploymentType': 'BLUE_GREEN',
-                'deploymentOption': 'WITH_TRAFFIC_CONTROL'
+                "deploymentType": "BLUE_GREEN",
+                "deploymentOption": "WITH_TRAFFIC_CONTROL",
             },
             blueGreenDeploymentConfiguration={
-                'terminateBlueInstancesOnDeploymentSuccess': {
-                    'action': 'TERMINATE',
-                    'terminationWaitTimeInMinutes': int(config.termination_wait_time)
+                "terminateBlueInstancesOnDeploymentSuccess": {
+                    "action": "TERMINATE",
+                    "terminationWaitTimeInMinutes": int(config.termination_wait_time),
                 },
-                'deploymentReadyOption': {
-                    'actionOnTimeout': action_on_timeout,
-                    'waitTimeInMinutes': ready_wait
-                }
+                "deploymentReadyOption": {
+                    "actionOnTimeout": action_on_timeout,
+                    "waitTimeInMinutes": ready_wait,
+                },
             },
             alarmConfiguration={
-                'enabled': True,
-                'ignorePollAlarmFailure': False,
-                'alarms': json.loads(config.target_group_alarms)
+                "enabled": True,
+                "ignorePollAlarmFailure": False,
+                "alarms": json.loads(config.target_group_alarms),
             },
             autoRollbackConfiguration={
-                'enabled': True,
-                'events': [
-                    'DEPLOYMENT_FAILURE',
-                    'DEPLOYMENT_STOP_ON_REQUEST',
-                    'DEPLOYMENT_STOP_ON_ALARM'
-                ]
+                "enabled": True,
+                "events": [
+                    "DEPLOYMENT_FAILURE",
+                    "DEPLOYMENT_STOP_ON_REQUEST",
+                    "DEPLOYMENT_STOP_ON_ALARM",
+                ],
             },
             ecsServices=[
                 {
-                    'serviceName': config.service_name,
-                    'clusterName': config.cluster_name
+                    "serviceName": config.service_name,
+                    "clusterName": config.cluster_name,
                 },
             ],
             loadBalancerInfo={
-                'targetGroupPairInfoList': [
+                "targetGroupPairInfoList": [
                     {
-                        'targetGroups': [
-                            {
-                                'name': config.blue_target_group
-                            },
-                            {
-                                'name': config.green_target_group
-                            }
+                        "targetGroups": [
+                            {"name": config.blue_target_group},
+                            {"name": config.green_target_group},
                         ],
-                        'prodTrafficRoute': {
-                            'listenerArns': [
-                                config.prod_listener_arn
-                            ]
+                        "prodTrafficRoute": {
+                            "listenerArns": [config.prod_listener_arn]
                         },
-                        'testTrafficRoute': {
-                            'listenerArns': [
-                                config.test_listener_arn
-                            ]
-                        }
+                        "testTrafficRoute": {
+                            "listenerArns": [config.test_listener_arn]
+                        },
                     },
                 ]
-            }
+            },
         )
         data = {
             "event": "Resource updated",
-            "deploymentGroupName": config.deployment_group_name
+            "deploymentGroupName": config.deployment_group_name,
         }
         status = SUCCESS
     except BaseException as e:
-        LOGGER.error("Resource update failed for deployment group {}".format(config.deployment_group_name) + str(e))
+        LOGGER.error(
+            "Resource update failed for deployment group {}".format(
+                config.deployment_group_name
+            )
+            + str(e)
+        )
     finally:
-        send(event=event,
-             context=context,
-             physical_resource_id=event['PhysicalResourceId'],
-             response_status=status,
-             response_data=data)
+        send(
+            event=event,
+            context=context,
+            physical_resource_id=event["PhysicalResourceId"],
+            response_status=status,
+            response_data=data,
+        )
 
 
 def delete_deployment_group(event, context):
@@ -281,62 +283,80 @@ def delete_deployment_group(event, context):
     status = FAILED
     config = extract_params(event)
 
-    if not event['PhysicalResourceId'].startswith('is-set-'):
-        send(event=event,
-             context=context,
-             physical_resource_id=event['PhysicalResourceId'],
-             response_status=SUCCESS,
-             response_data=data)
+    if not event["PhysicalResourceId"].startswith("is-set-"):
+        send(
+            event=event,
+            context=context,
+            physical_resource_id=event["PhysicalResourceId"],
+            response_status=SUCCESS,
+            response_data=data,
+        )
     else:
         try:
             client.delete_deployment_group(
                 applicationName=config.application_name,
-                deploymentGroupName=config.deployment_group_name
+                deploymentGroupName=config.deployment_group_name,
             )
             status = SUCCESS
 
             data = {
                 "event": "Resource deleted",
-                "deploymentGroupName": config.deployment_group_name
+                "deploymentGroupName": config.deployment_group_name,
             }
         except BaseException as e:
-            LOGGER.error("Resource delete failed for deployment group {}".format(config.deployment_group_name) + str(e))
+            LOGGER.error(
+                "Resource delete failed for deployment group {}".format(
+                    config.deployment_group_name
+                )
+                + str(e)
+            )
         finally:
-            send(event=event,
-                 context=context,
-                 physical_resource_id=event['PhysicalResourceId'],
-                 response_status=status,
-                 response_data=data)
+            send(
+                event=event,
+                context=context,
+                physical_resource_id=event["PhysicalResourceId"],
+                response_status=status,
+                response_data=data,
+            )
 
 
-def send(event, context, response_status, response_data, physical_resource_id=None, no_echo=False):
-    response_url = event['ResponseURL']
+def send(
+    event,
+    context,
+    response_status,
+    response_data,
+    physical_resource_id=None,
+    no_echo=False,
+):
+    response_url = event["ResponseURL"]
 
     LOGGER.info(response_url)
 
     response_body = {
-        'Status': response_status,
-        'Reason': 'See the details in CloudWatch Log Stream: ' + context.log_stream_name,
-        'PhysicalResourceId': physical_resource_id or context.log_stream_name, 'StackId': event['StackId'],
-        'RequestId': event['RequestId'], 'LogicalResourceId': event['LogicalResourceId'],
-        'NoEcho': no_echo,
-        'Data': response_data
+        "Status": response_status,
+        "Reason": "See the details in CloudWatch Log Stream: "
+        + context.log_stream_name,
+        "PhysicalResourceId": physical_resource_id or context.log_stream_name,
+        "StackId": event["StackId"],
+        "RequestId": event["RequestId"],
+        "LogicalResourceId": event["LogicalResourceId"],
+        "NoEcho": no_echo,
+        "Data": response_data,
     }
 
     json_response_body = json.dumps(response_body)
 
     LOGGER.info("Response body:\n" + json_response_body)
 
-    headers = {
-        'content-type': '',
-        'content-length': str(len(json_response_body))
-    }
+    headers = {"content-type": "", "content-length": str(len(json_response_body))}
 
     try:
-        req = urllib.request.Request(response_url,
-                                     data=json_response_body.encode('utf-8'),
-                                     headers=headers,
-                                     method='PUT')
+        req = urllib.request.Request(
+            response_url,
+            data=json_response_body.encode("utf-8"),
+            headers=headers,
+            method="PUT",
+        )
         response = urllib.request.urlopen(req)
         LOGGER.info("Status code: " + response.reason)
     except Exception as e:
