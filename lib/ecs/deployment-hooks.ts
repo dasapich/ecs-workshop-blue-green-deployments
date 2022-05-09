@@ -10,8 +10,8 @@ import {ApplicationLoadBalancer, ApplicationTargetGroup} from '@aws-cdk/aws-elas
 import {ApplicationListener} from '@aws-cdk/aws-elasticloadbalancingv2/lib/alb/application-listener';
 
 export interface EcsBlueGreenDeploymentHookProps {
-    readonly blueTargetGroup?: ApplicationTargetGroup;
-    readonly greenTargetGroup?: ApplicationTargetGroup;
+    readonly targetGroupX?: ApplicationTargetGroup;
+    readonly targetGroupY?: ApplicationTargetGroup;
     readonly alb?: ApplicationLoadBalancer;
     readonly prodListener?: ApplicationListener;
 }
@@ -68,8 +68,8 @@ export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
             description: 'Deployment lifecycle hook for testing',
             environment: {
                 'APP_ALB': props.alb!.loadBalancerArn,
-                'ALB_BLUE_TG': props.blueTargetGroup!.targetGroupArn,
-                'ALB_GREEN_TG': props.greenTargetGroup!.targetGroupArn,
+                'ALB_TG_X': props.targetGroupX!.targetGroupArn,
+                'ALB_TG_Y': props.targetGroupY!.targetGroupArn,
                 'ALB_PROD_LISTENER': props.prodListener!.listenerArn
             },
             memorySize: 128,
@@ -90,8 +90,8 @@ export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
             description: 'Deployment lifecycle hook to clean up tests',
             environment: {
                 'APP_ALB': props.alb!.loadBalancerArn,
-                'ALB_BLUE_TG': props.blueTargetGroup!.targetGroupArn,
-                'ALB_GREEN_TG': props.greenTargetGroup!.targetGroupArn,
+                'ALB_TG_X': props.targetGroupX!.targetGroupArn,
+                'ALB_TG_Y': props.targetGroupY!.targetGroupArn,
                 'ALB_PROD_LISTENER': props.prodListener!.listenerArn
             },
             memorySize: 128,

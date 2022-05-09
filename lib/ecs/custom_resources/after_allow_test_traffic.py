@@ -19,8 +19,8 @@ alb_client = boto3.client("elbv2")
 
 alb = os.environ["APP_ALB"]
 alb_prod_listener = os.environ["ALB_PROD_LISTENER"]
-alb_blue_tg = os.environ["ALB_BLUE_TG"]
-alb_green_tg = os.environ["ALB_GREEN_TG"]
+alb_tg_x = os.environ["ALB_TG_X"]
+alb_tg_y = os.environ["ALB_TG_Y"]
 
 # Lambda Handler
 def handler(event, context):
@@ -39,8 +39,8 @@ def handler(event, context):
             "Info:\n\tALB {}\n\tListener {}\n\tBlueTG {}\n\tGreenTG {}".format(
                 alb,
                 alb_prod_listener,
-                alb_blue_tg,
-                alb_green_tg,
+                alb_tg_x,
+                alb_tg_y,
             )
         )
         LOGGER.info("Current rules: " + json.dumps(response, indent=2))

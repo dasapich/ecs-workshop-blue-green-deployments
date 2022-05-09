@@ -139,8 +139,8 @@ export class EcsBlueGreenPipeline extends cdk.Construct {
         // Blue/Green delployment lifecycle hooks
         const ecsBlueGreenDeploymentHooks = new EcsBlueGreenDeploymentHooks(this, 'hooks', {
             alb: ecsBlueGreenService.alb,
-            blueTargetGroup: ecsBlueGreenService.blueTargetGroup,
-            greenTargetGroup: ecsBlueGreenService.greenTargetGroup,
+            targetGroupX: ecsBlueGreenService.blueTargetGroup,
+            targetGroupY: ecsBlueGreenService.greenTargetGroup,
             prodListener: ecsBlueGreenService.albProdListener
         });
 
