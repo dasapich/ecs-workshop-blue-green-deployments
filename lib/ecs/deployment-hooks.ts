@@ -40,7 +40,13 @@ export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
         const inlinePolicyForLambda = new iam.PolicyStatement({
             effect: Effect.ALLOW,
             actions: [
-                'codedeploy:PutLifecycleEventHookExecutionStatus'
+                'codedeploy:PutLifecycleEventHookExecutionStatus',
+                'elasticloadbalancing:Describe*',
+                'elasticloadbalancing:ModifyListener',
+                'elasticloadbalancing:CreateRule',
+                'elasticloadbalancing:ModifyRule',
+                'elasticloadbalancing:DeleteRule',
+                'elasticloadbalancing:SetRulePriorities',
             ],
             resources: ['*']
         });

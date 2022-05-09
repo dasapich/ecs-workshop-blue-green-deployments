@@ -3,6 +3,7 @@
 
 import json
 import logging
+import os
 
 import boto3
 
@@ -16,6 +17,11 @@ LOGGER.setLevel(logging.DEBUG)
 codedeploy_client = boto3.client("codedeploy")
 alb_client = boto3.client("elbv2")
 
+alb = os.environ["APP_ALB"]
+alb_prod_listener = os.environ["ALB_PROD_LISTENER"]
+alb_blue_tg = os.environ["ALB_BLUE_TG"]
+alb_green_tg = os.environ["ALB_GREEN_TG"]
+
 # Lambda Handler
 def handler(event, context):
     LOGGER.info("Received event: " + json.dumps(event, indent=2))
@@ -23,23 +29,48 @@ def handler(event, context):
 
     deployment_id = event["DeploymentId"]
     life_cycle_event_hook_execution_id = event["LifecycleEventHookExecutionId"]
-    validation_test_result = FAILED
+    test_result = FAILED
 
-    LOGGER.info("This is where AfterAllowTestTraffic validation tests happen.")
-    validation_test_result = SUCCESS
+    LOGGER.info("Describe the PROD listener rules.")
+    try:
+        response = alb_client.describe_rules(ListenerArn=alb_prod_listener)
+        test_result = SUCCESS
+        LOGGER.info(
+            "Info:\n\tALB {}\n\tListener {}\n\tBlueTG {}\n\tGreenTG {}".format(
+                alb,
+                alb_prod_listener,
+                alb_blue_tg,
+                alb_green_tg,
+            )
+        )
+        LOGGER.info("Current rules: " + json.dumps(response, indent=2))
+    except BaseException as e:
+        LOGGER.error(
+            "Create rule failed on ALB {} / Listener {}".format(
+                alb,
+                alb_prod_listener,
+            )
+            + str(e)
+        )
+    finally:
+        send_status(deployment_id, life_cycle_event_hook_execution_id, test_result)
 
+
+def send_status(deployment_id, life_cycle_event_hook_execution_id, test_result):
+    LOGGER.info("Sending back lifecycle hook status.")
     try:
         response = codedeploy_client.put_lifecycle_event_hook_execution_status(
             deploymentId=deployment_id,
             lifecycleEventHookExecutionId=life_cycle_event_hook_execution_id,
-            status=validation_test_result,
+            status=test_result,
         )
         LOGGER.info(
-            "AfterAllowTestTraffic tests succeeded {}".format(
-                response["lifecycleEventHookExecutionId"]
+            "AfterAllowTestTraffic {} {}".format(
+                test_result,
+                response["lifecycleEventHookExecutionId"],
             )
         )
 
     except BaseException as e:
-        LOGGER.info("AfterAllowTestTraffic validation tests failed")
+        LOGGER.info("AfterAllowTestTraffic failed")
         LOGGER.error(str(e))
