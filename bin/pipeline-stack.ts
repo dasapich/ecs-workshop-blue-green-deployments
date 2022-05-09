@@ -32,6 +32,12 @@ export class BlueGreenPipelineStack extends cdk.Stack {
             description: 'TaskSet termination time in minutes',
         });
 
+        const deploymentReadyWaitTimeinMinutes = new CfnParameter(this, 'deploymentReadyWaitTimeinMinutes', {
+            type: 'Number',
+            default: '0',
+            description: 'Minutes to wait before deployment status changed to Stopped if rerouting is not started manually'
+        })
+
         // Build the stack
         const ecsBlueGreenCluster = new EcsBlueGreen.EcsBlueGreenCluster(this, 'EcsBlueGreenCluster', {
             cidr: process.env.CIDR_RANGE
@@ -48,7 +54,7 @@ export class BlueGreenPipelineStack extends cdk.Stack {
             codeRepoName: process.env.CODE_REPO_NAME,
             ecsTaskRoleArn: process.env.ECS_TASK_ROLE_ARN,
             taskSetTerminationTimeInMinutes: taskSetTerminationTimeInMinutes.valueAsNumber,
-            deploymentReadyWaitTimeinMinutes: Number(process.env.DEPLOY_READY_WAIT_MIN)
+            deploymentReadyWaitTimeinMinutes: deploymentReadyWaitTimeinMinutes.valueAsNumber
         })
     }
 }

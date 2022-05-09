@@ -107,6 +107,8 @@ def create_deployment_group(event, context):
     data = {}
     status = FAILED
     config = extract_params(event)
+    ready_wait = int(config.deployment_ready_wait_time)
+    action_on_timeout = 'STOP_DEPLOYMENT' if ready_wait > 0 else 'CONTINUE_DEPLOYMENT'
     try:
         client.create_deployment_group(
             applicationName=config.application_name,
@@ -123,9 +125,8 @@ def create_deployment_group(event, context):
                     'terminationWaitTimeInMinutes': int(config.termination_wait_time)
                 },
                 'deploymentReadyOption': {
-                    #'actionOnTimeout': 'CONTINUE_DEPLOYMENT',
-                    'actionOnTimeout': 'STOP_DEPLOYMENT',
-                    'waitTimeInMinutes': int(config.deployment_ready_wait_time)
+                    'actionOnTimeout': action_on_timeout,
+                    'waitTimeInMinutes': ready_wait
                 }
             },
             alarmConfiguration={
@@ -191,6 +192,8 @@ def update_deployment_group(event, context):
     data = {}
     status = FAILED
     config = extract_params(event)
+    ready_wait = int(config.deployment_ready_wait_time)
+    action_on_timeout = 'STOP_DEPLOYMENT' if ready_wait > 0 else 'CONTINUE_DEPLOYMENT'
     try:
         current_deployment_group_name = event['OldResourceProperties']['DeploymentGroupName']
 
@@ -210,9 +213,8 @@ def update_deployment_group(event, context):
                     'terminationWaitTimeInMinutes': int(config.termination_wait_time)
                 },
                 'deploymentReadyOption': {
-                    #'actionOnTimeout': 'CONTINUE_DEPLOYMENT',
-                    'actionOnTimeout': 'STOP_DEPLOYMENT',
-                    'waitTimeInMinutes': int(config.deployment_ready_wait_time)
+                    'actionOnTimeout': action_on_timeout,
+                    'waitTimeInMinutes': ready_wait
                 }
             },
             alarmConfiguration={
