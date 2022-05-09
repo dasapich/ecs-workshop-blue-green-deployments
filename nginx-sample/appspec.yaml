@@ -13,4 +13,4 @@ Resources:
         PlatformVersion: "LATEST"
 Hooks:
   - AfterAllowTestTraffic: "blue-green-ecs-after-allow-test-traffic"
-  - BeforeAllowTraffc: "blue-green-ecs-before-allow-traffic"
+  - BeforeAllowTraffic: "blue-green-ecs-before-allow-traffic"
