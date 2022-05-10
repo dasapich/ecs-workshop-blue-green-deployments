@@ -28,6 +28,8 @@ export class DeploymentHook {
 export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
 
     public readonly deploymentHooks?: DeploymentHook[] = [];
+    private readonly httpHeaderName: string = 'counter_no';
+    private readonly httpHeaderValueList: string = '88888,99999';
 
     constructor(scope: cdk.Construct, id: string, props: EcsBlueGreenDeploymentHookProps = {}) {
         super(scope, id);
@@ -70,7 +72,9 @@ export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
                 'APP_ALB': props.alb!.loadBalancerArn,
                 'ALB_TG_X': props.targetGroupX!.targetGroupArn,
                 'ALB_TG_Y': props.targetGroupY!.targetGroupArn,
-                'ALB_PROD_LISTENER': props.prodListener!.listenerArn
+                'ALB_PROD_LISTENER': props.prodListener!.listenerArn,
+                'HTTP_HEADER_NAME': this.httpHeaderName,
+                'HTTP_HEADER_VALUE_LIST': this.httpHeaderValueList
             },
             memorySize: 128,
             timeout: cdk.Duration.seconds(60)
@@ -90,8 +94,6 @@ export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
             description: 'Deployment lifecycle hook to clean up tests',
             environment: {
                 'APP_ALB': props.alb!.loadBalancerArn,
-                'ALB_TG_X': props.targetGroupX!.targetGroupArn,
-                'ALB_TG_Y': props.targetGroupY!.targetGroupArn,
                 'ALB_PROD_LISTENER': props.prodListener!.listenerArn
             },
             memorySize: 128,
