@@ -231,14 +231,59 @@ export class EcsBlueGreenPipeline extends cdk.Construct {
                 },
             )
         );
-        //this.apiGateway.root.addMethod('POST');
-
+        apiGateway.root.addMethod(
+            'POST',
+             new api.HttpIntegration(
+                'http://' + nlb.loadBalancerDnsName,
+                {
+                    httpMethod: 'POST',
+                    options: {
+                        connectionType: api.ConnectionType.VPC_LINK,
+                        vpcLink: apiGatewayVpcLink,
+                    },
+                },
+            )
+        );
+        const noteEdit = apiGateway.root.addResource('edit');
+        const note = noteEdit.addResource('{note_id}');
+        note.addMethod(
+            'GET',
+            new api.HttpIntegration(
+                'http://' + nlb.loadBalancerDnsName + '/edit/{note_id}',
+                {
+                    httpMethod: 'GET',
+                    options: {
+                        connectionType: api.ConnectionType.VPC_LINK,
+                        vpcLink: apiGatewayVpcLink,
+                    },
+                },
+            )
+        );
+        note.addMethod(
+            'POST',
+            new api.HttpIntegration(
+                'http://' + nlb.loadBalancerDnsName + '/edit/{note_id}',
+                {
+                    httpMethod: 'POST',
+                    options: {
+                        connectionType: api.ConnectionType.VPC_LINK,
+                        vpcLink: apiGatewayVpcLink,
+                    },
+                },
+            )
+        );
 
         // Export the outputs
         new CfnOutput(this, 'ecsBlueGreenLBDns', {
-            description: 'Load balancer DNS',
+            description: 'Internal ALB DNS',
             exportName: 'ecsBlueGreenLBDns',
             value: ecsBlueGreenService.alb.loadBalancerDnsName
+        });
+
+        new CfnOutput(this, 'nlbDns', {
+            description: 'NLB DNS',
+            exportName: 'nlbDns',
+            value: nlb.loadBalancerDnsName
         });
 
          new CfnOutput(this, 'apiGatewayDns', {
