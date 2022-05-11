@@ -37,7 +37,7 @@ export class EcsBlueGreenService extends cdk.Construct {
     public readonly greenTargetGroup: ApplicationTargetGroup;
     public readonly albProdListener: ApplicationListener;
     public readonly albTestListener: ApplicationListener;
-    public readonly alb: ApplicationLoadBalancer
+    public readonly alb: ApplicationLoadBalancer;
 
     constructor(scope: cdk.Construct, id: string, props: EcsBlueGreenServiceProps = {}) {
         super(scope, id);

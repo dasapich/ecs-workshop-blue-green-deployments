@@ -11,6 +11,7 @@ import {IVpc} from '@aws-cdk/aws-ec2';
 import iam = require('@aws-cdk/aws-iam');
 import s3 = require('@aws-cdk/aws-s3');
 import ecr = require('@aws-cdk/aws-ecr');
+import api = require('@aws-cdk/aws-apigateway');
 import codeCommit = require('@aws-cdk/aws-codecommit');
 import codeBuild = require('@aws-cdk/aws-codebuild');
 import codePipeline = require('@aws-cdk/aws-codepipeline');
@@ -187,6 +188,13 @@ export class EcsBlueGreenPipeline extends cdk.Construct {
 
         pipeline.node.addDependency(ecsBlueGreenDeploymentGroup);
 
+        // Creat a REST API to front the application load balancer
+        const apiGateway = new api.RestApi(this, 'apiGateway');
+        const albHttpIntegration = new api.HttpIntegration('http://' + ecsBlueGreenService.alb.loadBalancerDnsName);
+        apiGateway.root.addMethod('GET', albHttpIntegration);
+        //this.apiGateway.root.addMethod('POST');
+
+
         // Export the outputs
         new CfnOutput(this, 'ecsBlueGreenLBDns', {
             description: 'Load balancer DNS',
@@ -194,6 +202,12 @@ export class EcsBlueGreenPipeline extends cdk.Construct {
             value: ecsBlueGreenService.alb.loadBalancerDnsName
         });
 
-    }
+         new CfnOutput(this, 'apiGatewayDns', {
+            description: 'API Gateway DNS',
+            exportName: 'apiGatewayDns',
+            value: apiGateway.url
+        });
+
+   }
 
 }
