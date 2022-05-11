@@ -15,7 +15,7 @@ echo -e "${GREEN}Start building the container image stack resources...."
 
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 export AWS_DEFAULT_REGION=$(aws configure get region)
-export CODE_REPO_NAME=nginx-sample
+export CODE_REPO_NAME=app-demo
 
 npx cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION
 

@@ -9,6 +9,7 @@ A walkthrough for this example can be found at https://ecsworkshop.com/blue_gree
 * [Why do I need this?](#why-do-i-need-this)
 * [What are the pre-requisites?](#what-are-the-pre-requisites)
 * [How can I deploy the stack?](#how-can-i-deploy-the-stack)
+* [Custom testing](#custom-testing)
 * [Cleanup](#cleanup)
 * [Security](#security)
 * [License](#license)
@@ -21,7 +22,7 @@ ECS blue/ green deployment CDK construct enabling teams to build and deploy pipe
 
 * CodePipeline will be used for executing Blue/Green deployment using CodeCommit, CodeBuild and CodeDeploy
 * The container images will be stored in the Elastic Container Registry
-* NGINX sample application is deployed in AWS Fargate
+* A demo application is deployed in AWS Fargate
 * The construct uses a custom resource for creating the deployment configuration and builds the end-to-end infrastructure
 
 ![Blue-green-pipeline](./blue-green-pipeline.jpg)
@@ -64,14 +65,14 @@ cd $HOME/environment/ecs-workshop-blue-green-deployments
     ./bin/scripts/deploy-container-image-stack.sh
     ```
 * Push the source code to CodeCommit
-  * The source code is available [here](nginx-sample/README.md)
-  * The [buildspec.yml](nginx-sample/buildspec.yml) has placeholders for the variables
+  * The source code is available [here](app-demo/README.md)
+  * The [buildspec.yml](app-demo/buildspec.yml) has placeholders for the variables
     ```shell
     export AWS_DEFAULT_REGION=$(aws configure get region)
-    export CODE_REPO_NAME=nginx-sample
+    export CODE_REPO_NAME=app-demo
     export CODE_REPO_URL=codecommit::$AWS_DEFAULT_REGION://$CODE_REPO_NAME
     cd $HOME/environment && git clone $CODE_REPO_URL && cd $CODE_REPO_NAME
-    cp $HOME/environment/ecs-workshop-blue-green-deployments/nginx-sample/* .
+    cp $HOME/environment/ecs-workshop-blue-green-deployments/app-demo/* .
     git checkout -b main
     git remote -v
     git add .
@@ -83,6 +84,17 @@ cd $HOME/environment/ecs-workshop-blue-green-deployments
     cd $HOME/environment/ecs-workshop-blue-green-deployments
     ./bin/scripts/deploy-pipeline-stack.sh
     ```
+## Custom testing
+
+**TODO** Update the README
+
+A few notes:
+* An API Gateway fronts the service
+* Testing during can be performed by sending a "counter_no=88888" or "counter_no=99999" HTTP header
+  ```shell
+  curl -i -H "counter_no: 88888" https://API_GW_DNS/prod/
+  curl -i -H "counter_no: 99999" -d "text=abc&counter_no=99999" https://API_GW_DNS/prod/
+  ```
 
 ## Cleanup
 

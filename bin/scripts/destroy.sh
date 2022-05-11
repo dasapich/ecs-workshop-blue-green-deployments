@@ -13,8 +13,8 @@ echo -e "${GREEN}Start cleanup..."
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 export AWS_DEFAULT_REGION=$(aws configure get region)
 
-export CODE_REPO_NAME=nginx-sample
-export API_NAME=nginx-sample
+export CODE_REPO_NAME=app-demo
+export API_NAME=app-demo
 export CONTAINER_PORT=80
 export CIDR_RANGE=10.0.0.0/16
 export CODE_REPO_URL=$(aws cloudformation describe-stacks --stack-name BlueGreenContainerImageStack --query 'Stacks[*].Outputs[?ExportName==`repositoryCloneUrlHttp`].OutputValue' --output text)

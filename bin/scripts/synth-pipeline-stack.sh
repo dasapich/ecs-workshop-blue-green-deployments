@@ -39,7 +39,7 @@ export ECS_TASK_ROLE_ARN=$(aws cloudformation describe-stacks --stack-name BlueG
 
 echo -e "${GREEN}Start synthing the CodePipeline resources...."
 
-export API_NAME=nginx-sample
+export API_NAME=app-demo
 export CONTAINER_PORT=80
 export CIDR_RANGE=10.0.0.0/16
 export DEPLOY_READY_WAIT_MIN=10

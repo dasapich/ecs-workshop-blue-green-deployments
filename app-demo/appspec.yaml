@@ -1,0 +1,17 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "<TASK_DEFINITION>"
+        LoadBalancerInfo:
+          ContainerName: "app-demo"
+          ContainerPort: 80
+        PlatformVersion: "LATEST"
+Hooks:
+  - BeforeInstall: "blue-green-ecs-before-install"
+  - AfterAllowTestTraffic: "blue-green-ecs-after-allow-test-traffic"
+  - BeforeAllowTraffic: "blue-green-ecs-before-allow-traffic"
