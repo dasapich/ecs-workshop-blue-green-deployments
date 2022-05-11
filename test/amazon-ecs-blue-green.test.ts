@@ -43,8 +43,8 @@ test('Blue/Green deployment pipeline is created', () => {
     expectCDK(stack).to(countResources('AWS::ECS::Cluster', 1));
     expectCDK(stack).to(countResources('AWS::ECS::TaskDefinition', 1));
     expectCDK(stack).to(countResources('AWS::ECS::Service', 1));
-    expectCDK(stack).to(countResources('AWS::ElasticLoadBalancingV2::LoadBalancer', 1));
-    expectCDK(stack).to(countResources('AWS::ElasticLoadBalancingV2::Listener', 2));
-    expectCDK(stack).to(countResources('AWS::ElasticLoadBalancingV2::TargetGroup', 2));
+    expectCDK(stack).to(countResources('AWS::ElasticLoadBalancingV2::LoadBalancer', 2));
+    expectCDK(stack).to(countResources('AWS::ElasticLoadBalancingV2::Listener', 3));
+    expectCDK(stack).to(countResources('AWS::ElasticLoadBalancingV2::TargetGroup', 3));
     expectCDK(stack).to(countResources('AWS::CloudWatch::Alarm', 4));
 });

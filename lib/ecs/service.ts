@@ -67,7 +67,7 @@ export class EcsBlueGreenService extends cdk.Construct {
         // Creating an application load balancer, listener and two target groups for Blue/Green deployment
         this.alb = new elb.ApplicationLoadBalancer(this, 'alb', {
             vpc: props.vpc!,
-            internetFacing: true
+            internetFacing: false
         });
         this.albProdListener = this.alb.addListener('albProdListener', {
             port: 80

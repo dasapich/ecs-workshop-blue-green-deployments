@@ -46,10 +46,11 @@ export DEPLOY_READY_WAIT_MIN=10
 
 npx cdk --app "npx ts-node bin/pipeline-stack.ts" deploy --require-approval never --parameters deploymentReadyWaitTimeinMinutes=${DEPLOY_READY_WAIT_MIN}
 export ALB_DNS=$(aws cloudformation describe-stacks --stack-name BlueGreenPipelineStack --query 'Stacks[*].Outputs[?ExportName==`ecsBlueGreenLBDns`].OutputValue' --output text)
+export API_DNS=$(aws cloudformation describe-stacks --stack-name BlueGreenPipelineStack --query 'Stacks[*].Outputs[?ExportName==`apiGatewayDns`].OutputValue' --output text)
 
 echo -e "${GREEN}Completed building the CodePipeline resources...."
 #
-#echo -e "${GREEN}Let's curl the below URL for API...."
-#
-#echo "http://$ALB_DNS"
-#curl http://$ALB_DNS
+echo -e "${GREEN}Let's curl the below API Gateway URL...."
+echo "http://$ALB_DNS"
+echo "$API_DNS"
+curl $API_DNS

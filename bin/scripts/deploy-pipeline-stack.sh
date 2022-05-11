@@ -50,12 +50,7 @@ export API_DNS=$(aws cloudformation describe-stacks --stack-name BlueGreenPipeli
 
 echo -e "${GREEN}Completed building the CodePipeline resources...."
 
-echo -e "${GREEN}Let's curl the below ALB URL...."
-
-echo "http://$ALB_DNS"
-curl http://$ALB_DNS
-
 echo -e "${GREEN}Let's curl the below API Gateway URL...."
-
+echo "http://$ALB_DNS"
 echo "$API_DNS"
 curl $API_DNS

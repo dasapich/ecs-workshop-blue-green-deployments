@@ -8,9 +8,11 @@ import {BlockPublicAccess, BucketEncryption} from '@aws-cdk/aws-s3';
 import {EcsBlueGreenDeploymentGroup, EcsBlueGreenService, EcsServiceAlarms, EcsBlueGreenDeploymentHooks} from '..';
 import {ICluster} from '@aws-cdk/aws-ecs';
 import {IVpc} from '@aws-cdk/aws-ec2';
+import {AlbTarget} from '@aws-cdk/aws-elasticloadbalancingv2-targets';
 import iam = require('@aws-cdk/aws-iam');
 import s3 = require('@aws-cdk/aws-s3');
 import ecr = require('@aws-cdk/aws-ecr');
+import elb = require('@aws-cdk/aws-elasticloadbalancingv2');
 import api = require('@aws-cdk/aws-apigateway');
 import codeCommit = require('@aws-cdk/aws-codecommit');
 import codeBuild = require('@aws-cdk/aws-codebuild');
@@ -188,10 +190,45 @@ export class EcsBlueGreenPipeline extends cdk.Construct {
 
         pipeline.node.addDependency(ecsBlueGreenDeploymentGroup);
 
-        // Creat a REST API to front the application load balancer
+        // Create NLB to forward requests from API Gateway VPC link to the service ALB
+        const nlb = new elb.NetworkLoadBalancer(this, 'nlb', {
+            vpc: props.vpc!,
+        });
+        const nlbListener = nlb.addListener('nlbListener', { port: 80 });
+        const nlbAlbTargetGroup = new elb.NetworkTargetGroup(this, 'nlbAlbTargetGroup', {
+            port: 80,
+            targetType: elb.TargetType.ALB,
+            vpc: props.vpc!,
+            targets: [
+                new AlbTarget(ecsBlueGreenService.alb, 80),
+            ],
+            healthCheck: {
+                protocol: elb.Protocol.HTTP,
+            },
+        });
+        nlbListener.addTargetGroups('albTargetGroup',nlbAlbTargetGroup);
+
+        nlbAlbTargetGroup.node.addDependency(ecsBlueGreenService.alb.listeners[0]);
+            
+        // API Gateway VPC Link
+        const apiGatewayVpcLink = new api.VpcLink(this, 'apiGatewayVpcLink', {
+            targets: [nlb],
+        });
+        // Creat a REST API
         const apiGateway = new api.RestApi(this, 'apiGateway');
-        const albHttpIntegration = new api.HttpIntegration('http://' + ecsBlueGreenService.alb.loadBalancerDnsName);
-        apiGateway.root.addMethod('GET', albHttpIntegration);
+        apiGateway.root.addMethod(
+            'GET',
+            new api.HttpIntegration(
+                'http://' + nlb.loadBalancerDnsName,
+                {
+                    httpMethod: 'GET',
+                    options: {
+                        connectionType: api.ConnectionType.VPC_LINK,
+                        vpcLink: apiGatewayVpcLink,
+                    },
+                },
+            )
+        );
         //this.apiGateway.root.addMethod('POST');
 
 
