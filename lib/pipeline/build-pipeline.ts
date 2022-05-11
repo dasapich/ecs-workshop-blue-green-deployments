@@ -215,7 +215,9 @@ export class EcsBlueGreenPipeline extends cdk.Construct {
             targets: [nlb],
         });
         // Creat a REST API
-        const apiGateway = new api.RestApi(this, 'apiGateway');
+        const apiGateway = new api.RestApi(this, 'apiGateway', {
+            description: 'API for custom Blue/Green/Canary deployment testing',
+        });
         apiGateway.root.addMethod(
             'GET',
             new api.HttpIntegration(
