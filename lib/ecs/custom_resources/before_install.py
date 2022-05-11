@@ -24,7 +24,7 @@ alb_prod_listener = os.environ["ALB_PROD_LISTENER"]
 # Lambda Handler
 def handler(event, context):
     LOGGER.info("Received event: " + json.dumps(event, indent=2))
-    LOGGER.info("Entering BeforeInstall hook.")
+    LOGGER.info("Entering BeforeAllowTraffic hook.")
 
     deployment_id = event["DeploymentId"]
     life_cycle_event_hook_execution_id = event["LifecycleEventHookExecutionId"]
@@ -41,7 +41,7 @@ def handler(event, context):
 
         hook_status = SUCCESS
     except BaseException as e:
-        LOGGER.error("BeforeInstall hook failed with error: " + str(e))
+        LOGGER.error("BeforeAllowTraffic hook failed with error: " + str(e))
     finally:
         send_status(deployment_id, life_cycle_event_hook_execution_id, hook_status)
 
@@ -100,12 +100,12 @@ def send_status(deployment_id, life_cycle_event_hook_execution_id, hook_status):
             status=hook_status,
         )
         LOGGER.info(
-            "BeforeInstall {} {}".format(
+            "BeforeAllowTraffic {} {}".format(
                 hook_status,
                 response["lifecycleEventHookExecutionId"],
             )
         )
 
     except BaseException as e:
-        LOGGER.info("BeforeInstall failed")
+        LOGGER.info("BeforeAllowTraffic failed")
         LOGGER.error(str(e))

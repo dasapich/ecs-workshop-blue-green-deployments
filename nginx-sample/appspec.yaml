@@ -12,5 +12,6 @@ Resources:
           ContainerPort: 80
         PlatformVersion: "LATEST"
 Hooks:
+  - BeforeInstall: "blue-green-ecs-before-install"
   - AfterAllowTestTraffic: "blue-green-ecs-after-allow-test-traffic"
   - BeforeAllowTraffic: "blue-green-ecs-before-allow-traffic"

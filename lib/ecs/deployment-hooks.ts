@@ -56,6 +56,26 @@ export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
         customLambdaServiceRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
         customLambdaServiceRole.addToPolicy(inlinePolicyForLambda);
 
+        // BeforeInstall hook
+        const BeforeInstallLambda = new lambda.Function(this, 'BeforeInstallLambda', {
+            code: lambda.Code.fromAsset(
+                path.join(__dirname, 'custom_resources'),
+                {
+                    exclude: ['**', '!before_install.py']
+                }),
+            runtime: lambda.Runtime.PYTHON_3_8,
+            handler: 'before_install.handler',
+            role: customLambdaServiceRole,
+            functionName: 'blue-green-ecs-before-install',
+            description: 'Deployment lifecycle hook to clean up listener rules before install replacement taskset',
+            environment: {
+                'APP_ALB': props.alb!.loadBalancerArn,
+                'ALB_PROD_LISTENER': props.prodListener!.listenerArn
+            },
+            memorySize: 128,
+            timeout: cdk.Duration.seconds(60)
+        });
+
         // AfterAllowTestTraffic hook
         const afterAllowTestTrafficLambda = new lambda.Function(this, 'afterAllowTestTrafficLambda', {
             code: lambda.Code.fromAsset(
@@ -100,6 +120,7 @@ export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
             timeout: cdk.Duration.seconds(60)
         });
 
+        this.deploymentHooks?.push(new DeploymentHook(BeforeInstallLambda.functionName));
         this.deploymentHooks?.push(new DeploymentHook(afterAllowTestTrafficLambda.functionName));
         this.deploymentHooks?.push(new DeploymentHook(beforeAllowTrafficLambda.functionName));
     }
