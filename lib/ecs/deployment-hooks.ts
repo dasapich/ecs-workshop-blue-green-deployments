@@ -1,13 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import * as cdk from '@aws-cdk/core';
-import {Effect, ManagedPolicy, ServicePrincipal} from '@aws-cdk/aws-iam';
+import {Duration} from 'aws-cdk-lib';
+import {Construct} from 'constructs';
+import {Effect, ManagedPolicy, ServicePrincipal} from 'aws-cdk-lib/aws-iam';
+import {ApplicationLoadBalancer, ApplicationTargetGroup} from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import {ApplicationListener} from 'aws-cdk-lib/aws-elasticloadbalancingv2/lib/alb/application-listener';
+import iam = require('aws-cdk-lib/aws-iam');
+import lambda = require('aws-cdk-lib/aws-lambda');
 import * as path from 'path';
-import iam = require('@aws-cdk/aws-iam');
-import lambda = require('@aws-cdk/aws-lambda');
-import {ApplicationLoadBalancer, ApplicationTargetGroup} from '@aws-cdk/aws-elasticloadbalancingv2';
-import {ApplicationListener} from '@aws-cdk/aws-elasticloadbalancingv2/lib/alb/application-listener';
 
 export interface EcsBlueGreenDeploymentHookProps {
     readonly targetGroupX?: ApplicationTargetGroup;
@@ -25,13 +26,13 @@ export class DeploymentHook {
     }
 }
 
-export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
+export class EcsBlueGreenDeploymentHooks extends Construct {
 
     public readonly deploymentHooks?: DeploymentHook[] = [];
     private readonly httpHeaderName: string = 'counter_no';
     private readonly httpHeaderValueList: string = '88888,99999';
 
-    constructor(scope: cdk.Construct, id: string, props: EcsBlueGreenDeploymentHookProps = {}) {
+    constructor(scope: Construct, id: string, props: EcsBlueGreenDeploymentHookProps = {}) {
         super(scope, id);
 
         // IAM role for hook lambda functions
@@ -73,7 +74,7 @@ export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
                 'ALB_PROD_LISTENER': props.prodListener!.listenerArn
             },
             memorySize: 128,
-            timeout: cdk.Duration.seconds(60)
+            timeout: Duration.seconds(60)
         });
 
         // AfterAllowTestTraffic hook
@@ -97,7 +98,7 @@ export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
                 'HTTP_HEADER_VALUE_LIST': this.httpHeaderValueList
             },
             memorySize: 128,
-            timeout: cdk.Duration.seconds(60)
+            timeout: Duration.seconds(60)
         });
 
         // BeforeAllowTraffic hook
@@ -117,7 +118,7 @@ export class EcsBlueGreenDeploymentHooks extends cdk.Construct {
                 'ALB_PROD_LISTENER': props.prodListener!.listenerArn
             },
             memorySize: 128,
-            timeout: cdk.Duration.seconds(60)
+            timeout: Duration.seconds(60)
         });
 
         this.deploymentHooks?.push(new DeploymentHook(BeforeInstallLambda.functionName));

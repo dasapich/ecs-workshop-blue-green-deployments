@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import {countResources, expect as expectCDK} from '@aws-cdk/assert';
-import * as cdk from '@aws-cdk/core';
+import {Template} from 'aws-cdk-lib/assertions';
+import * as cdk from 'aws-cdk-lib';
 import * as EcsBlueGreen from '../lib/index';
 
 test('Blue/Green deployment pipeline is created', () => {
@@ -35,16 +35,16 @@ test('Blue/Green deployment pipeline is created', () => {
     })
 
     // THEN
-    expectCDK(stack).to(countResources('AWS::IAM::Role', 11));
-    expectCDK(stack).to(countResources('AWS::ECR::Repository', 1));
-    expectCDK(stack).to(countResources('AWS::CodeCommit::Repository', 1));
-    expectCDK(stack).to(countResources('AWS::CodeBuild::Project', 1));
-    expectCDK(stack).to(countResources('AWS::EC2::VPC', 1));
-    expectCDK(stack).to(countResources('AWS::ECS::Cluster', 1));
-    expectCDK(stack).to(countResources('AWS::ECS::TaskDefinition', 1));
-    expectCDK(stack).to(countResources('AWS::ECS::Service', 1));
-    expectCDK(stack).to(countResources('AWS::ElasticLoadBalancingV2::LoadBalancer', 2));
-    expectCDK(stack).to(countResources('AWS::ElasticLoadBalancingV2::Listener', 3));
-    expectCDK(stack).to(countResources('AWS::ElasticLoadBalancingV2::TargetGroup', 3));
-    expectCDK(stack).to(countResources('AWS::CloudWatch::Alarm', 4));
+    Template.fromStack(stack).resourceCountIs('AWS::IAM::Role', 11);
+    Template.fromStack(stack).resourceCountIs('AWS::ECR::Repository', 1);
+    Template.fromStack(stack).resourceCountIs('AWS::CodeCommit::Repository', 1);
+    Template.fromStack(stack).resourceCountIs('AWS::CodeBuild::Project', 1);
+    Template.fromStack(stack).resourceCountIs('AWS::EC2::VPC', 1);
+    Template.fromStack(stack).resourceCountIs('AWS::ECS::Cluster', 1);
+    Template.fromStack(stack).resourceCountIs('AWS::ECS::TaskDefinition', 1);
+    Template.fromStack(stack).resourceCountIs('AWS::ECS::Service', 1);
+    Template.fromStack(stack).resourceCountIs('AWS::ElasticLoadBalancingV2::LoadBalancer', 2);
+    Template.fromStack(stack).resourceCountIs('AWS::ElasticLoadBalancingV2::Listener', 3);
+    Template.fromStack(stack).resourceCountIs('AWS::ElasticLoadBalancingV2::TargetGroup', 3);
+    Template.fromStack(stack).resourceCountIs('AWS::CloudWatch::Alarm', 4);
 });

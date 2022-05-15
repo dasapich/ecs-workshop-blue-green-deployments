@@ -4,8 +4,9 @@
 // SPDX-License-Identifier: MIT-0
 
 import 'source-map-support/register';
-import * as cdk from '@aws-cdk/core';
-import {CfnParameter, Construct, StackProps} from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib';
+import {CfnParameter, StackProps} from 'aws-cdk-lib';
+import {Construct} from 'constructs';
 import * as EcsBlueGreen from '../lib';
 
 export class BlueGreenPipelineStack extends cdk.Stack {
