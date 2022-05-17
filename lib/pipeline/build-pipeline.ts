@@ -218,60 +218,19 @@ export class EcsBlueGreenPipeline extends Construct {
         const apiGateway = new api.RestApi(this, 'apiGateway', {
             description: 'API for custom Blue/Green/Canary deployment testing',
         });
-        apiGateway.root.addMethod(
-            'GET',
-            new api.HttpIntegration(
-                'http://' + nlb.loadBalancerDnsName,
+        const proxyResource = apiGateway.root.addProxy({
+            anyMethod: true,
+            defaultIntegration: new api.HttpIntegration(
+                'http://' + nlb.loadBalancerDnsName + '/',
                 {
-                    httpMethod: 'GET',
+                    proxy: true,
                     options: {
                         connectionType: api.ConnectionType.VPC_LINK,
                         vpcLink: apiGatewayVpcLink,
-                    },
+                    }
                 },
             )
-        );
-        apiGateway.root.addMethod(
-            'POST',
-             new api.HttpIntegration(
-                'http://' + nlb.loadBalancerDnsName,
-                {
-                    httpMethod: 'POST',
-                    options: {
-                        connectionType: api.ConnectionType.VPC_LINK,
-                        vpcLink: apiGatewayVpcLink,
-                    },
-                },
-            )
-        );
-        const noteEdit = apiGateway.root.addResource('edit');
-        const note = noteEdit.addResource('{note_id}');
-        note.addMethod(
-            'GET',
-            new api.HttpIntegration(
-                'http://' + nlb.loadBalancerDnsName + '/edit/{note_id}',
-                {
-                    httpMethod: 'GET',
-                    options: {
-                        connectionType: api.ConnectionType.VPC_LINK,
-                        vpcLink: apiGatewayVpcLink,
-                    },
-                },
-            )
-        );
-        note.addMethod(
-            'POST',
-            new api.HttpIntegration(
-                'http://' + nlb.loadBalancerDnsName + '/edit/{note_id}',
-                {
-                    httpMethod: 'POST',
-                    options: {
-                        connectionType: api.ConnectionType.VPC_LINK,
-                        vpcLink: apiGatewayVpcLink,
-                    },
-                },
-            )
-        );
+        });
 
         // Export the outputs
         new CfnOutput(this, 'ecsBlueGreenLBDns', {
