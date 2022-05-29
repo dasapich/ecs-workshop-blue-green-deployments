@@ -71,7 +71,8 @@ export class EcsBlueGreenDeploymentHooks extends Construct {
             description: 'Deployment lifecycle hook to clean up listener rules before install replacement taskset',
             environment: {
                 'APP_ALB': props.alb!.loadBalancerArn,
-                'ALB_PROD_LISTENER': props.prodListener!.listenerArn
+                'ALB_PROD_LISTENER': props.prodListener!.listenerArn,
+                'HTTP_HEADER_NAME': this.httpHeaderName
             },
             memorySize: 128,
             timeout: Duration.seconds(60)
@@ -115,7 +116,8 @@ export class EcsBlueGreenDeploymentHooks extends Construct {
             description: 'Deployment lifecycle hook to clean up tests',
             environment: {
                 'APP_ALB': props.alb!.loadBalancerArn,
-                'ALB_PROD_LISTENER': props.prodListener!.listenerArn
+                'ALB_PROD_LISTENER': props.prodListener!.listenerArn,
+                'HTTP_HEADER_NAME': this.httpHeaderName
             },
             memorySize: 128,
             timeout: Duration.seconds(60)

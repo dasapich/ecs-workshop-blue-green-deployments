@@ -50,7 +50,11 @@ def handler(event, context):
             green_tg = alb_tg_x
 
         # Remove all non-default rules on the listener
-        remove_routing_rules(listener_arn=alb_prod_listener)
+        remove_custom_canary_routing_rule(
+            listener_arn=alb_prod_listener,
+            target_group_arn=green_tg,
+            http_header_name=http_header_name,
+        )
 
         # Add custom http-header routing rule
         add_http_header_request_routing_rule(
@@ -96,13 +100,20 @@ def get_blue_target_group(listener_arn):
     return target_group
 
 
-def remove_routing_rules(listener_arn):
+def remove_custom_canary_routing_rule(listener_arn, target_group_arn, http_header_name):
     """
-    Removes all non-default rules on the ALB listener.
+    Removes the custom canary routing rule pointing to the green/test target group on
+    the ALB listener.
 
     :param listener_arn: ARN of the ALB listener.
+    :param target_group_arn: ARN of the target group to forward traffic to.
+    :param http_header_name: The name of the HTTP header field.
     """
-    LOGGER.info("Remove all non-default rules on listener {}".format(listener_arn))
+    LOGGER.info(
+        "Remove custom canary rule on listener {} header {} to target group {}".format(
+            listener_arn, http_header_name, target_group_arn
+        )
+    )
     try:
         response = alb_client.describe_rules(ListenerArn=listener_arn)
         LOGGER.info("Current listener rules :" + json.dumps(response, indent=2))
@@ -116,13 +127,35 @@ def remove_routing_rules(listener_arn):
 
     try:
         for rule in response["Rules"]:
-            if rule["IsDefault"]:
-                LOGGER.info("Skip default rule:" + json.dumps(rule, indent=2))
-                continue
-            rule_arn = rule["RuleArn"]
-            LOGGER.info("Removing {}".format(rule_arn) + json.dumps(rule, indent=2))
-            remove_response = alb_client.delete_rule(RuleArn=rule_arn)
-            LOGGER.info("Remaining rules :" + json.dumps(remove_response, indent=2))
+            # if rule["IsDefault"]:
+            #     LOGGER.info("Skip default rule:" + json.dumps(rule, indent=2))
+            #     continue
+            # if not rule["Conditions"]:
+            #     LOGGER.info("Skip no conditions rule:" + json.dumps(rule, indent=2))
+            #     continue
+            # if rule["Conditions"][0]["Field"] != "http-header":
+            #     LOGGER.info("Skip other rule:" + json.dumps(rule, indent=2))
+            #     continue
+            # if (
+            #     rule["Conditions"][0]["HttpHeaderConfig"]["HttpHeaderName"]
+            #     != http_header_name
+            # ):
+            #     LOGGER.info("Skip other rule:" + json.dumps(rule, indent=2))
+            #     continue
+            # if rule["Actions"][0]["TargetGroupArn"] != target_group_arn:
+            #     LOGGER.info("Skip other rule:" + json.dumps(rule, indent=2))
+            #     continue
+            if (
+                rule["Conditions"]
+                and rule["Conditions"][0]["Field"] == "http-header"
+                and rule["Conditions"][0]["HttpHeaderConfig"]["HttpHeaderName"]
+                == http_header_name
+                and rule["Actions"][0]["TargetGroupArn"] == target_group_arn
+            ):
+                rule_arn = rule["RuleArn"]
+                LOGGER.info("Removing {}".format(rule_arn) + json.dumps(rule, indent=2))
+                remove_response = alb_client.delete_rule(RuleArn=rule_arn)
+                LOGGER.info("Remaining rules :" + json.dumps(remove_response, indent=2))
     except ClientError as err:
         LOGGER.error(
             "Error removing rules {}: {}".format(
@@ -131,7 +164,7 @@ def remove_routing_rules(listener_arn):
         )
         raise err
 
-    LOGGER.info("Remove all rules done")
+    LOGGER.info("Remove custom canary routing rule done")
 
 
 def add_http_header_request_routing_rule(
